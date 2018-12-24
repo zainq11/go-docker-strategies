@@ -1,0 +1,13 @@
+#Build stage
+FROM golang:alpine as builder
+RUN mkdir /build
+ADD . /build
+WORKDIR /build
+#Instruct Go compiler to statically link the runtime libraries inside the binary
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o main .
+
+#Final image
+FROM scratch
+COPY --from=builder /build/main /app/
+WORKDIR /app
+CMD ["./main"]
